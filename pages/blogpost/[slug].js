@@ -1,20 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router'
 import styles from '../../styles/BlogPost.module.css'
+import * as fs from 'fs';
 
-const slug = () => {
-    const router = useRouter();
-    const { slug } = router.query;
+
+const Slug = (props) => {
+    const [blog, setBlog] = useState(props.myBlog);
     return <div className={styles.container}>
         <main className={styles.main}>
-            <h1>Title of the page {slug}</h1>
+            <h1>{blog && blog.title}</h1>
             <hr />
             <div>
-                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Dolorem nulla repudiandae sint facilis, sunt corrupti numquam id illo. Ut deserunt animi iste voluptatum!
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellendus maxime rem earum repudiandae, cum possimus quae assumenda nulla culpa. Odit architecto repellendus non, unde recusandae placeat nisi perferendis quod nesciunt! Dolorum sapiente et sint consequuntur earum blanditiis iusto reprehenderit molestiae quia eligendi? Exercitationem, officia nobis!
+                {blog && blog.content}
             </div>
         </main>
     </div>;
 };
 
-export default slug;
+export async function getStaticPaths() {
+    return {
+      paths: [
+        { params: { slug : 'how-to-learn-flask' } }, 
+        { params: { slug : 'how-to-learn-javascript' } }, 
+        { params: { slug : 'how-to-learn-nextjs' } },
+       ], fallback: true // false or "blocking" // See the "fallback" section below
+    };
+  }
+export async function getStaticProps(context) {
+    // const router = useRouter();
+    const { slug } = context.params;
+   let myBlog = await fs.promises.readFile(`blogdata/${slug}.json`, 'utf-8')
+
+    return {
+        props: { myBlog : JSON.parse(myBlog)}, // will be passed to the page component as props
+    }
+}
+    export default Slug;

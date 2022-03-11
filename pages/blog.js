@@ -1,26 +1,39 @@
-import React from 'react'
+import React,{ useEffect, useState} from 'react';
 import styles from '../styles/Blog.module.css'
 import Link from 'next/link'
+import * as fs from 'fs';
+// import { useEffect, useState } from 'react/cjs/react.production.min'
 
-const Blog = () => {
+const Blog = (props) => {
+  const [blogs, setBlogs] = useState(props.allBlogs);
+  // useEffect(() =>{
+    
+  // },[])
   return <div className={styles.container}>
   <main className={styles.main}>
-      <div >
-      <Link href={'/blogpost/learn-javascript'}>
-        <h2 className={styles.blogItemh3}>How to learn javascript in 2022?</h2></Link>
-        <p>javascript is language use to create website</p>
+  {blogs.map((blogitem) =>{
+    return <div key={blogitem.slug} >
+      <Link href={`/blogpost/${blogitem.slug}`} passHref>
+        <h3 className={styles.blogItemh3}>{blogitem.title}</h3></Link>
+        <p className={styles.blogItemp}>{blogitem.content.substr(0,140)}...</p>
       </div>
-      <div className="blogItem">
-        <h2>How to learn javascript in 2022?</h2>
-        <p>javascript is language use to create website</p>
-      </div>
-      <div className="blogItem">
-        <h2>How to learn javascript in 2022?</h2>
-        <p>javascript is language use to create website</p>
-      </div>
-      
+  })}
       </main>
     </div>
+};
+export async function getStaticProps(context) {
+  let data = await fs.promises.readdir("blogdata")
+  let myfile;
+  let allBlogs = [];
+  for (let index = 0; index < data.length; index++) {
+    const item = data[index];
+    console.log(item)
+    myfile = await fs.promises.readFile(('blogdata/' + item), 'utf-8')
+    allBlogs.push(JSON.parse(myfile))
+  }
+  return {
+    props: {allBlogs}, // will be passed to the page component as props
+  }
 }
 
 export default Blog
